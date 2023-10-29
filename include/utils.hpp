@@ -11,6 +11,7 @@
 #include <iostream>
 #include <filesystem>
 #include <limits>
+#include <stdexcept>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -27,12 +28,57 @@ using complex = std::complex<long double>;
 using Vpoint = std::array<size_t, 2>;
 using ComplexF = std::function<complex(const complex&)>;
 using Vcomplex = std::vector<complex>;
+using Imap = std::vector<std::vector<size_t>>;
 
 constexpr complex c_one = {1.0, 0.0};
+constexpr complex c_card = {0.25, 0.0};
 
 inline long double sqrMod(const complex& val)
 {
     return std::real(val)*std::real(val) + std::imag(val)*std::imag(val);
+}
+
+inline void sortChannel(std::array<size_t, 3>& iter_channel, std::array<size_t, 3>& order_channel)
+{
+    size_t aux;
+
+    if (iter_channel[0] > iter_channel[1]) {
+        aux = iter_channel[0];
+        iter_channel[0] = iter_channel[1];
+        iter_channel[1] = aux;
+
+        order_channel[0] = 1;
+        order_channel[1] = 0;
+    }
+
+    if (iter_channel[1] > iter_channel[2]) {
+        aux = iter_channel[1];
+        iter_channel[1] = iter_channel[2];
+        iter_channel[2] = aux;
+
+        order_channel[2] = order_channel[1];
+        order_channel[1] = 2;
+
+        if (iter_channel[0] > iter_channel[1]) {
+            aux = iter_channel[0];
+            iter_channel[0] = iter_channel[1];
+            iter_channel[1] = aux;
+
+            aux = order_channel[0];
+            order_channel[0] = order_channel[1];
+            order_channel[1] = aux;
+        }
+    }
+}
+
+inline bool circleCardiod(const complex& val)
+{
+    if (sqrMod(val + c_card) <= 0.25) return true; // check if inside a large portion of the cardioid
+    else if (sqrMod(val + c_one) <= 0.0625) return true; // check if inside double fixed point
+    
+    // implement cardioid check
+
+    return false;
 }
 
 template <typename T, size_t N>

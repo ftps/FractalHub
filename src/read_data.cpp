@@ -1,10 +1,14 @@
 #include "read_data.hpp"
 
 FractalType read_type(std::ifstream& fp);
-Cfunction read_color_function(std::ifstream& fp);
+
 FThreadOpts read_main(std::ifstream& fp);
-MandelOptions read_mandel_opts(std::ifstream& fp);
+MandelOptions read_mandel_opts(std::ifstream& fp, const bool& rc = true);
+BuddhaOptions read_buddha_opts(std::ifstream& fp);
 NewtonOptions read_newton_opts(std::ifstream& fp);
+
+Cfunction read_color_function(std::ifstream& fp);
+Cconverter read_color_converter(std::ifstream& fp);
 
 Pcolor read_color(std::string color);
 u_short convert_hex(const char& c);
@@ -33,11 +37,17 @@ std::shared_ptr<FractalThread> read_data(const std::string& filename)
     else if (type == FractalType::BurningZSpace) {
         fractal = std::shared_ptr<FractalThread>(new BurningShipZspace(read_mandel_opts(fp)));
     }
+    else if (type == FractalType::BuddhaCSpace) {
+        fractal = std::shared_ptr<FractalThread>(new BuddhabrotCspace(read_buddha_opts(fp)));
+    }
+    else if (type == FractalType::BuddhaZSpace) {
+        fractal = std::shared_ptr<FractalThread>(new BuddhabrotZspace(read_buddha_opts(fp)));
+    }
     else if (type == FractalType::Newton) {
         fractal = std::shared_ptr<FractalThread>(new NewtonFractal(read_newton_opts(fp)));
     }
     else {
-        // throw error
+        throw std::invalid_argument("Error reading type");
     }
 
     fractal->setOpFile(filename);
@@ -57,6 +67,8 @@ FractalType read_type(std::ifstream& fp)
     else if (type == "Mandel_ZSpace") return FractalType::MandelZSpace;
     else if (type == "Burning_CSpace") return FractalType::BurningCSpace;
     else if (type == "Burning_ZSpace") return FractalType::BurningZSpace;
+    else if (type == "Buddha_CSpace") return FractalType::BuddhaCSpace;
+    else if (type == "Buddha_ZSpace") return FractalType::BuddhaZSpace;
     else if (type == "Newton_Fractal") return FractalType::Newton;
 
     return FractalType::Unknown;
@@ -74,11 +86,6 @@ FThreadOpts read_main(std::ifstream& fp)
     fp >> st_aux_a >> st_aux_b;
     fp >> fOpts.max_iterations;
     fp >> fOpts.name;
-    fp >> aux_c;
-
-    // read color
-    fOpts.base_color = read_color(aux_c);
-    fOpts.color = read_color_function(fp);
 
     // compute size
     fOpts.size = {st_aux_a, st_aux_b};
@@ -88,15 +95,44 @@ FThreadOpts read_main(std::ifstream& fp)
     return fOpts;
 }
 
-MandelOptions read_mandel_opts(std::ifstream& fp)
+MandelOptions read_mandel_opts(std::ifstream& fp, const bool& rc)
 {
     long double aux_a, aux_b;
+    std::string aux_s;
     MandelOptions fOpts(read_main(fp));
 
     fp >> aux_a >> aux_b;
     fOpts.n = {aux_a, aux_b};
     fp >> aux_a >> aux_b;
     fOpts.c = {aux_a, aux_b};
+
+    if (rc) {
+        fp >> aux_s;
+        fOpts.base_color = read_color(aux_s);
+        fOpts.color = read_color_function(fp);
+    }
+    
+
+    return fOpts;
+}
+
+BuddhaOptions read_buddha_opts(std::ifstream& fp)
+{
+    BuddhaOptions fOpts(read_mandel_opts(fp, false));
+
+    fp >> fOpts.three_channel;
+    if (fOpts.three_channel) {
+        fp >> fOpts.iter_channel[R] >> fOpts.iter_channel[G] >> fOpts.iter_channel[B];
+    }
+    else {
+        fOpts.iter_channel[R] = fOpts.max_iterations;
+        fOpts.iter_channel[G] = fOpts.iter_channel[R];
+        fOpts.iter_channel[B] = fOpts.iter_channel[R];
+    }
+    
+    fp >> fOpts.render_hits;
+    fOpts.render_hits *= fOpts.size[X]*fOpts.size[Y];
+    fOpts.color = read_color_converter(fp);
 
     return fOpts;
 }
@@ -118,7 +154,8 @@ NewtonOptions read_newton_opts(std::ifstream& fp)
         fOpts.colors.push_back(read_color(c_aux));
     }
     fp >> fOpts.rad_2 >> fOpts.a;
-
+    fp >> c_aux;
+    fOpts.base_color = read_color(c_aux);
     fOpts.color = ColorGen::generateRootsSimple(fOpts.colors, fOpts.roots);
 
     return fOpts;
@@ -157,11 +194,27 @@ Cfunction read_color_function(std::ifstream& fp)
 
         res = ColorGen::generateSmooth(palette, p);
     }
-    else if (aux_type == "Roots") {
-        // do nothing
+    else {
+        throw std::invalid_argument("Color not found");
+    }
+
+    return res;
+}
+
+Cconverter read_color_converter(std::ifstream& fp)
+{
+    std::string aux_type;
+    Cconverter res;
+
+    fp >> aux_type;
+
+    if (aux_type == "Default") {
+        size_t type;
+        fp >> type;
+        res = ColorGen::generateDefault(type);
     }
     else {
-        // throw error
+        throw std::invalid_argument("Converter not found");
     }
 
     return res;

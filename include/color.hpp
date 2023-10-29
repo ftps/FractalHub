@@ -13,9 +13,10 @@
 #define GREEN ((Pcolor) {0x00,0xFF,0x00})
 #define BLUE  ((Pcolor) {0x00,0x00,0xFF})
 
-using Pcolor = std::array<short, 3>;
-using Vmap = std::vector<std::vector<Pcolor>>;
+using Pcolor = std::array<long, 3>;
+using Cmap = std::vector<std::vector<Pcolor>>;
 using Cfunction = std::function<Pcolor(const size_t&, const complex&)>;
+using Cconverter = std::function<void(Cmap& map)>;
 
 namespace ColorGen {
     using Vcolor = std::vector<Pcolor>;
@@ -23,8 +24,11 @@ namespace ColorGen {
     using VCpair = std::vector<Cpair>;
 
     Cfunction generateSmooth(const VCpair& colors_pair, const long double& p);
-    Cfunction generateDefault(const size_t type, const size_t size);
+    Cfunction generateDefault(const size_t& type, const size_t& size);
     Cfunction generateRootsSimple(const Vcolor& color, const Vcomplex& roots);
+
+    Cconverter generateSmooth(const VCpair& colors_pair);
+    Cconverter generateDefault(const size_t& type);
 };
 
 
