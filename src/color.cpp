@@ -7,22 +7,22 @@ namespace ColorGen {
         long double lp = std::log(p);
 
         for (size_t i = 0; i < colors_pair.size()-1; ++i) {
-            auto [c1, k1] = colors_pair[i];
-            auto [c2, k2] = colors_pair[i+1];
+            const auto [c1, k1] = colors_pair[i];
+            const auto [c2, k2] = colors_pair[i+1];
             for (size_t k = 0; k < k1; ++k) {
-                colors.push_back(c1 + (c2 - c1)*(((double)k)/((double)k1)));
+                colors.push_back(c1 + (c2 - c1)*((static_cast<double>(k))/(static_cast<double>(k1))));
             }
         }
 
-        auto [c1, k1] = colors_pair.back();
-        auto [c2, k2] = colors_pair.front();
+        const auto [c1, k1] = colors_pair.back();
+        const auto [c2, k2] = colors_pair.front();
         for (size_t k = 0; k < k1; ++k) {
-            colors.push_back(c1 + (c2 - c1)*(((double)k)/((double)k1)));
+            colors.push_back(c1 + (c2 - c1)*((static_cast<double>(k))/(static_cast<double>(k1))));
         }
 
         Cfunction res = [colors, lp](const size_t& n, const complex& z) {
             long double nu = std::log(std::log(sqrMod(z))/(2*lp))/lp;
-            size_t it = ((size_t)(n + 1 - nu))%colors.size();
+            size_t it = (static_cast<size_t>(static_cast<long double>(n) + 1 - nu))%colors.size();
 
             return colors[it];
         };
@@ -103,10 +103,10 @@ namespace ColorGen {
         Vcolor colors;
 
         for (size_t i = 0; i < colors_pair.size()-1; ++i) {
-            auto [c1, k1] = colors_pair[i];
-            auto [c2, k2] = colors_pair[i+1];
+            const auto [c1, k1] = colors_pair[i];
+            const auto [c2, k2] = colors_pair[i+1];
             for (size_t k = 0; k < k1; ++k) {
-                colors.push_back(c1 + (c2 - c1)*(((double)k)/((double)k1)));
+                colors.push_back(c1 + (c2 - c1)*((static_cast<double>(k))/(static_cast<double>(k1))));
             }
         }
         colors.push_back(colors_pair.back().first);

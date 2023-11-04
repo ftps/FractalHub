@@ -34,7 +34,7 @@ inline bool FractalThread::point2index(const complex& z, Vpoint& loc) const
     }
 
     complex aux = z - tl_corner;
-    loc = {(size_t)(size1[Y]*(aux.imag()/c_vector.imag())), (size_t)(size1[X]*(std::real(aux)/std::real(c_vector)))};
+    loc = {static_cast<size_t>(size1[Y]*(aux.imag()/c_vector.imag())), static_cast<size_t>(size1[X]*(std::real(aux)/std::real(c_vector)))};
 
     return true;
 }
