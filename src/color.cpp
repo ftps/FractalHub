@@ -1,6 +1,24 @@
 #include "color.hpp"
 
 namespace ColorGen {
+
+    Pcolor averageColor(const Vcolor& color)
+    {
+        Pcolor res = BLACK;
+
+        for (const Pcolor c : color) {
+            res += c;
+        }
+
+        res = res/static_cast<long>(color.size());
+
+        return res;
+    }
+
+
+
+
+
     Cfunction generateSmooth(const VCpair& colors_pair, const long double& p)
     {
         Vcolor colors;

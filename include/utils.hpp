@@ -138,9 +138,9 @@ inline std::array<T, N>& operator-=(std::array<T, N>& l, const std::array<T, N> 
 }
 
 template <typename T, typename U, size_t N>
-inline std::array<decltype(std::declval<T>()*std::declval<U>()), N> operator/(const std::array<T, N>& l, const std::array<U, N>& r)
+inline std::array<decltype(std::declval<T>()/std::declval<U>()), N> operator/(const std::array<T, N>& l, const std::array<U, N>& r)
 {
-    std::array<decltype(std::declval<T>()*std::declval<U>()), N> res;
+    std::array<decltype(std::declval<T>()/std::declval<U>()), N> res;
 
     for (size_t i = 0; i < N; ++i) {
         res[i] = l[i]/r[i];
@@ -162,9 +162,9 @@ inline std::array<decltype(std::declval<T>()*std::declval<U>()), N> operator*(co
 }
 
 template <typename T, size_t N>
-inline std::array<long double, N> operator/(const std::array<T, N>& l, const long double& r)
+inline std::array<T, N> operator/(const std::array<T, N>& l, const T& r)
 {
-    std::array<long double, N> res;
+    std::array<T, N> res;
 
     for (size_t i = 0; i < N; ++i) {
         res[i] = l[i]/r;

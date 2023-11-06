@@ -23,6 +23,8 @@ namespace ColorGen {
     using Cpair = std::pair<Pcolor, size_t>;
     using VCpair = std::vector<Cpair>;
 
+    Pcolor averageColor(const Vcolor& color);
+
     Cfunction generateSmooth(const VCpair& colors_pair, const long double& p);
     Cfunction generateDefault(const size_t& type, const size_t& size);
     Cfunction generateRootsSimple(const Vcolor& color, const Vcomplex& roots);

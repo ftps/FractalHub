@@ -29,6 +29,7 @@ struct FThreadOpts {
     size_t max_iterations;
     std::string name;
     std::string op_file;
+    int ssaa;
 };
 
 class FractalThread : protected FThreadOpts {
@@ -53,6 +54,7 @@ class FractalThread : protected FThreadOpts {
         Vpoint size1;
         Pcolor base_color = BLACK;
         bool has_run = false;
+        std::vector<complex> ssaa_dz;
 };
 
 

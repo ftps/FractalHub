@@ -86,6 +86,7 @@ FThreadOpts read_main(std::ifstream& fp)
     fp >> st_aux_a >> st_aux_b;
     fp >> fOpts.max_iterations;
     fp >> fOpts.name;
+    fp >> fOpts.ssaa;
 
     // compute size
     fOpts.size = {st_aux_a, st_aux_b};

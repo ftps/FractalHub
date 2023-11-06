@@ -16,11 +16,31 @@ void FractalThread::setDimensions(complex tl_corner, long double x_size, Vpoint 
     size1 = size - Vpoint{1,1};
     c_vector = {x_size, -x_size*size[Y]/size[X]};
     br_corner = tl_corner + c_vector;
+
+    ssaa_dz.clear();
+    if (ssaa == 0) {
+        ssaa_dz.push_back({0,0});
+    }
+    else {
+        long double dx = std::abs(std::real(c_vector))/size1[X];
+        long double dy = std::abs(std::imag(c_vector))/size1[Y];
+
+        int nx = (ssaa + 1)/2 + 1;
+        int ny = ssaa/2 + 1;
+
+        long double dxn = dx/(nx + 1);
+        long double dyn = dy/(ny + 1);
+
+        for (int i = 1; i <= nx; ++i) {
+            for (int j = 1; j <= ny; ++j) {
+                ssaa_dz.push_back({dxn*j - dx/2, dyn*i - dy/2});
+            }
+        }
+    }
 }
 
 inline complex FractalThread::index2point(const Vpoint& loc) const
 {
-    //return tl_corner + ((c_vector*loc)/size1);
     return tl_corner + complex((std::real(c_vector)*loc[X])/size1[X], (std::imag(c_vector)*loc[Y])/size1[Y]);
 }
 
@@ -120,17 +140,29 @@ void FractalThread::drawImage()
 
 void MandelbrotCspace::thread(Cmap& map, const Vpoint& ends)
 {
+    ColorGen::Vcolor color_v;
+
     for (size_t i = ends[X]; i < ends[Y]; ++i) {
         for (size_t j = 0; j < size[X]; ++j) {
-            complex c0 = index2point({j,i});
-            complex z = z_seed;
-            for (size_t k = 0; k < max_iterations; ++k) {
-                z = std::pow(z, n) + c0;
-                if (sqrMod(z) > 4) {
-                    map[i][j] = color(k, z);
-                    break;
+            complex c0_c = index2point({j,i});
+            color_v.clear();
+            for (const complex& dz : ssaa_dz) {
+                complex c0 = c0_c + dz;
+                complex z = z_seed;
+                bool non_escape = true;
+                for (size_t k = 0; k < max_iterations; ++k) {
+                    z = std::pow(z, n) + c0;
+                    if (sqrMod(z) > 4) {
+                        non_escape = false;
+                        color_v.push_back(color(k, z));
+                        break;
+                    }
+                }
+                if (non_escape) {
+                    color_v.push_back(base_color);
                 }
             }
+            map[i][j] = ColorGen::averageColor(color_v);
         }
     }
 }
@@ -142,16 +174,28 @@ void MandelbrotCspace::thread(Cmap& map, const Vpoint& ends)
 
 void MandelbrotZspace::thread(Cmap& map, const Vpoint& ends)
 {
+    ColorGen::Vcolor color_v;
+
     for (size_t i = ends[X]; i < ends[Y]; ++i) {
         for (size_t j = 0; j < size[X]; ++j) {
-            complex z = index2point({j,i});
-            for (size_t k = 0; k < max_iterations; ++k) {
-                z = std::pow(z, n) + c;
-                if (sqrMod(z) > 4) {
-                    map[i][j] = color(k, z);
-                    break;
+            complex z_c = index2point({j,i});
+            color_v.clear();
+            for (const complex& dz : ssaa_dz) {
+                complex z = z_c + dz;
+                bool non_escape = true;
+                for (size_t k = 0; k < max_iterations; ++k) {
+                    z = std::pow(z, n) + c;
+                    if (sqrMod(z) > 4) {
+                        non_escape = false;
+                        color_v.push_back(color(k, z));
+                        break;
+                    }
+                }
+                if (non_escape) {
+                    color_v.push_back(base_color);
                 }
             }
+            map[i][j] = ColorGen::averageColor(color_v);
         }
     }
 }
@@ -163,17 +207,29 @@ void MandelbrotZspace::thread(Cmap& map, const Vpoint& ends)
 
 void BurningShipCspace::thread(Cmap& map, const Vpoint& ends)
 {
+    ColorGen::Vcolor color_v;
+
     for (size_t i = ends[X]; i < ends[Y]; ++i) {
         for (size_t j = 0; j < size[X]; ++j) {
-            complex c0 = index2point({j,i});
-            complex z = z_seed;
-            for (size_t k = 0; k < max_iterations; ++k) {
-                z = std::pow(complex(std::abs(z.real()), std::abs(z.imag())), n) + c0;
-                if (sqrMod(z) > 4) {
-                    map[i][j] = color(k, z);
-                    break;
+            complex c0_c = index2point({j,i});
+            color_v.clear();
+            for (const complex& dz : ssaa_dz) {
+                complex c0 = c0_c + dz;
+                complex z = z_seed;
+                bool non_escape = true;
+                for (size_t k = 0; k < max_iterations; ++k) {
+                    z = std::pow(complex(std::abs(z.real()), std::abs(z.imag())), n) + c0;
+                    if (sqrMod(z) > 4) {
+                        non_escape = false;
+                        color_v.push_back(color(k, z));
+                        break;
+                    }
+                }
+                if (non_escape) {
+                    color_v.push_back(base_color);
                 }
             }
+            map[size1[Y] - i][j] = ColorGen::averageColor(color_v);   
         }
     }
 }
@@ -185,16 +241,28 @@ void BurningShipCspace::thread(Cmap& map, const Vpoint& ends)
 
 void BurningShipZspace::thread(Cmap& map, const Vpoint& ends)
 {
+    ColorGen::Vcolor color_v;
+
     for (size_t i = ends[X]; i < ends[Y]; ++i) {
         for (size_t j = 0; j < size[X]; ++j) {
-            complex z = index2point({j,i});
-            for (size_t k = 0; k < max_iterations; ++k) {
-                z = std::pow(complex(std::abs(z.real()), std::abs(z.imag())), n) + c;
-                if (sqrMod(z) > 4) {
-                    map[i][j] = color(k, z);
-                    break;
+            complex z_c = index2point({j,i});
+            color_v.clear();
+            for (const complex& dz : ssaa_dz) {
+                complex z = z_c + dz;
+                bool non_escape = true;
+                for (size_t k = 0; k < max_iterations; ++k) {
+                    z = std::pow(complex(std::abs(z.real()), std::abs(z.imag())), n) + c;
+                    if (sqrMod(z) > 4) {
+                        non_escape = false;
+                        color_v.push_back(color(k, z));
+                        break;
+                    }
+                }
+                if (non_escape) {
+                    color_v.push_back(base_color);
                 }
             }
+            map[size1[Y] - i][j] = ColorGen::averageColor(color_v);
         }
     }
 }
