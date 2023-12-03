@@ -116,6 +116,32 @@ namespace ColorGen {
 
 
 
+
+
+
+    void threeChannel(Cmap& map)
+    {
+        Pcolor max_color = {0, 0, 0};
+        for (const std::vector<Pcolor>& vc : map) {
+            for (const Pcolor& c : vc) {
+                for (size_t i = 0; i < 3; ++i) {
+                    if (c[i] > max_color[i]) {
+                        max_color[i] = c[i];
+                    }
+                }
+            }
+        }
+
+        for (std::vector<Pcolor>& vc : map) {
+            for (Pcolor& c : vc) {
+                for (size_t i = 0; i < 3; ++i) {
+                    c[i] = (255*c[i])/max_color[i];
+                }
+            }
+        }
+    }
+
+
     Cconverter generateSmooth(const VCpair& colors_pair)
     {
         Vcolor colors;
@@ -186,5 +212,32 @@ namespace ColorGen {
         }
 
         return res;
+    }
+
+    Cconverter generateThreeChannel(const double& threshold)
+    {
+        return [threshold](Cmap& map){
+            Pcolor max_color = {0, 0, 0};
+            for (const std::vector<Pcolor>& vc : map) {
+                for (const Pcolor& c : vc) {
+                    for (size_t i = 0; i < 3; ++i) {
+                        if (c[i] > max_color[i]) {
+                            max_color[i] = c[i];
+                        }
+                    }
+                }
+            }
+
+            max_color = max_color*(1.0-threshold);
+
+            for (std::vector<Pcolor>& vc : map) {
+                for (Pcolor& c : vc) {
+                    for (size_t i = 0; i < 3; ++i) {
+                        c[i] = (255*c[i])/max_color[i];
+                        if (c[i] > 255) c[i] = 255;
+                    }
+                }
+            }
+        };
     }
 };

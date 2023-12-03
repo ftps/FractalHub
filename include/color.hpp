@@ -29,8 +29,10 @@ namespace ColorGen {
     Cfunction generateDefault(const size_t& type, const size_t& size);
     Cfunction generateRootsSimple(const Vcolor& color, const Vcomplex& roots);
 
+    void threeChannel(Cmap& map);
     Cconverter generateSmooth(const VCpair& colors_pair);
     Cconverter generateDefault(const size_t& type);
+    Cconverter generateThreeChannel(const double& threshold);
 };
 
 

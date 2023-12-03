@@ -133,7 +133,14 @@ BuddhaOptions read_buddha_opts(std::ifstream& fp)
     
     fp >> fOpts.render_hits;
     fOpts.render_hits *= fOpts.size[X]*fOpts.size[Y];
-    fOpts.color = read_color_converter(fp);
+    if (fOpts.three_channel) {
+        double th;
+        fp >> th;
+        fOpts.color = ColorGen::generateThreeChannel(th);
+    }
+    else {
+        fOpts.color = read_color_converter(fp);
+    }
 
     return fOpts;
 }
