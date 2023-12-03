@@ -1,4 +1,4 @@
-#include "read_data.hpp"
+#include "fractal_data.hpp"
 
 int main(int argc, char* argv[])
 {
